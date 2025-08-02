@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🌽 Corn AI Analyzer</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-green-50 min-h-screen flex flex-col items-center p-6">
+
+  <!-- Navigation Bar -->
+  <nav class="w-full max-w-2xl flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold text-green-700">🌽 Corn AI Analyzer</h1>
+    <div class="space-x-4 text-sm">
+      <a href="about.html" class="text-green-700 hover:underline">About Us</a>
+      <a href="contact.html" class="text-green-700 hover:underline">Contact</a>
+      <a href="feedback.html" class="text-green-700 hover:underline">Feedback</a>
+    </div>
+  </nav>
+
+  <!-- Main App Container -->
+  <div class="bg-white p-6 rounded-2xl shadow-xl w-full max-w-xl text-center">
+    <div class="mb-4 text-left">
+      <label for="mode" class="text-sm font-medium text-gray-700">Select Analysis Mode:</label>
+      <select id="mode" name="mode" class="w-full mt-1 p-2 border rounded">
+        <option value="corn">🌽 Corn Count</option>
+        <option value="disease">🦠 Disease Detection</option>
+      </select>
+    </div>
+
+    <!-- Upload Input -->
+    <label for="image" class="block text-left text-sm font-medium text-gray-700 mb-1">Upload Corn Field Image:</label>
+    <input id="image" type="file" accept="image/*" class="w-full mb-4 p-2 border rounded" onchange="previewImage()" />
+
+    <!-- Image Preview + Processed Output -->
+    <div class="relative w-full mb-4">
+      <img id="preview" class="hidden rounded-xl border w-full object-contain" alt="Uploaded preview" />
+      <img id="processed" class="hidden mt-4 rounded-xl border w-full object-contain" alt="Processed Result" />
+      <canvas id="canvas" class="absolute top-0 left-0 w-full h-full pointer-events-none"></canvas>
+    </div>
+
+    <button onclick="analyze()" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">🔍 Analyze Image</button>
+
+    <div id="loading" class="mt-4 text-gray-600 hidden">⏳ Analyzing image, please wait...</div>
+    <div id="result" class="mt-6 text-left text-gray-800 hidden"></div>
+    <button id="resetBtn" onclick="resetForm()" class="hidden mt-6 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">🔁 Analyze Another</button>
+  </div>
+
+  <script>
+    let imageElement, canvasElement, ctx;
+
+    function previewImage() {
+      const input = document.getElementById('image');
+      imageElement = document.getElementById('preview');
+      canvasElement = document.getElementById('canvas');
+      ctx = canvasElement.getContext("2d");
+
+      const file = input.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = e => {
+        imageElement.src = e.target.result;
+        imageElement.onload = () => {
+          imageElement.classList.remove("hidden");
+          canvasElement.width = imageElement.clientWidth;
+          canvasElement.height = imageElement.clientHeight;
+          ctx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+        };
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function analyze() {
+      const input = document.getElementById('image');
+      const resultBox = document.getElementById('result');
+      const mode = document.getElementById('mode').value;
+      const loading = document.getElementById('loading');
+      const processedImg = document.getElementById('processed');
+      const resetBtn = document.getElementById('resetBtn');
+
+      if (!input.files[0]) return alert("Please upload an image.");
+
+      resultBox.innerHTML = '';
+      processedImg.classList.add("hidden");
+      resetBtn.classList.add("hidden");
+      loading.classList.remove("hidden");
+
+      const formData = new FormData();
+      formData.append('image', input.files[0]);
+      formData.append('mode', mode);
+
+      try {
+        const res = await fetch("http://127.0.0.1:5000/predict", {
+          method: "POST",
+          body: formData
+        });
+
+        const data = await res.json();
+        loading.classList.add("hidden");
+
+        if (data.error) {
+          alert("❌ Error: " + data.error);
+          resetBtn.classList.remove("hidden");
+          return;
+        }
+
+        if (mode === "corn") {
+          const summary = {};
+          for (const pred of data.predictions) {
+            const name = pred.class;
+            if (!summary[name]) summary[name] = { count: 0, totalConfidence: 0 };
+            summary[name].count++;
+            summary[name].totalConfidence += pred.confidence;
+          }
+
+          let html = `<h2 class="font-semibold text-lg mb-2">🌽 Total Corn Scan Summary</h2>
+            <table class="w-full text-sm text-left text-gray-600 border">
+              <thead class="bg-green-100 text-gray-700">
+                <tr><th class="px-3 py-2">Class</th><th class="px-3 py-2">Count</th><th class="px-3 py-2">Avg. Confidence</th></tr>
+              </thead><tbody class="bg-white">`;
+
+          for (const [label, stats] of Object.entries(summary)) {
+            html += `<tr><td class="px-3 py-2">${label}</td><td class="px-3 py-2">${stats.count}</td><td class="px-3 py-2">${(stats.totalConfidence / stats.count).toFixed(1)}%</td></tr>`;
+          }
+
+          html += '</tbody></table>';
+          resultBox.innerHTML = html;
+
+        } else {
+          let html = '<h2 class="font-semibold text-lg mb-2">🦠 Detected Diseases</h2><ul class="list-disc pl-5">';
+          for (const pred of data.predictions) {
+            html += `<li><strong>${pred.class}</strong> (${pred.confidence}%)</li>`;
+          }
+          html += '</ul><div class="mt-4 p-3 bg-yellow-100 border rounded">📋 <strong>Recommendation:</strong> Inspect affected plants closely and apply appropriate fungicides or rotate crops. Early detection is crucial for crop health.</div>';
+          resultBox.innerHTML = html;
+        }
+
+        resultBox.classList.remove("hidden");
+        processedImg.src = "http://127.0.0.1:5000" + data.image_url;
+        processedImg.classList.remove("hidden");
+        resetBtn.classList.remove("hidden");
+
+      } catch (err) {
+        console.error(err);
+        loading.classList.add("hidden");
+        alert("❌ Error while processing the image.");
+        resetBtn.classList.remove("hidden");
+      }
+    }
+
+    function resetForm() {
+      document.getElementById('image').value = "";
+      document.getElementById('preview').classList.add('hidden');
+      document.getElementById('processed').classList.add('hidden');
+      document.getElementById('canvas').getContext("2d").clearRect(0, 0, canvasElement.width, canvasElement.height);
+      document.getElementById('result').classList.add('hidden');
+      document.getElementById('resetBtn').classList.add('hidden');
+    }
+  </script>
+</body>
+</html>

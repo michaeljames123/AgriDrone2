@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: corn-ai-analyzer
+    env: python
+    buildCommand: ""
+    startCommand: gunicorn app:app
