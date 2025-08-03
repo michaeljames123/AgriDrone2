@@ -1,20 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>🌽 Corn AI Analyzer</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
+
 <body class="bg-green-50 min-h-screen flex flex-col items-center p-6">
 
   <!-- Navigation Bar -->
   <nav class="w-full max-w-2xl flex justify-between items-center mb-6">
     <h1 class="text-2xl font-bold text-green-700">🌽 Corn AI Analyzer</h1>
     <div class="space-x-4 text-sm">
-      <a href="about.html" class="text-green-700 hover:underline">About Us</a>
-      <a href="contact.html" class="text-green-700 hover:underline">Contact</a>
-      <a href="feedback.html" class="text-green-700 hover:underline">Feedback</a>
+      <a href="/about" class="text-green-700 hover:underline">About Us</a>
+      <a href="/contact" class="text-green-700 hover:underline">Contact</a>
+      <a href="/feedback" class="text-green-700 hover:underline">Feedback</a>
+
     </div>
   </nav>
 
@@ -35,15 +38,19 @@
     <!-- Image Preview + Processed Output -->
     <div class="relative w-full mb-4">
       <img id="preview" class="hidden rounded-xl border w-full object-contain" alt="Uploaded preview" />
-      <img id="processed" class="hidden mt-4 rounded-xl border w-full object-contain" alt="Processed Result" />
+      <img id="processed" crossorigin="anonymous" class="hidden mt-4 rounded-xl border w-full object-contain"
+        alt="Processed Result" />
+
       <canvas id="canvas" class="absolute top-0 left-0 w-full h-full pointer-events-none"></canvas>
     </div>
 
-    <button onclick="analyze()" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">🔍 Analyze Image</button>
+    <button onclick="analyze()" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">🔍 Analyze
+      Image</button>
 
     <div id="loading" class="mt-4 text-gray-600 hidden">⏳ Analyzing image, please wait...</div>
     <div id="result" class="mt-6 text-left text-gray-800 hidden"></div>
-    <button id="resetBtn" onclick="resetForm()" class="hidden mt-6 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">🔁 Analyze Another</button>
+    <button id="resetBtn" onclick="resetForm()"
+      class="hidden mt-6 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">🔁 Analyze Another</button>
   </div>
 
   <script>
@@ -91,7 +98,7 @@
       formData.append('mode', mode);
 
       try {
-        const res = await fetch("http://127.0.0.1:5000/predict", {
+        const res = await fetch("/predict", {
           method: "POST",
           body: formData
         });
@@ -109,7 +116,7 @@
           const summary = {};
           for (const pred of data.predictions) {
             const name = pred.class;
-            if (!summary[name]) summary[name] = { count: 0, totalConfidence: 0 };
+            if (!summary[name]) summary[name] = {count: 0, totalConfidence: 0};
             summary[name].count++;
             summary[name].totalConfidence += pred.confidence;
           }
@@ -137,7 +144,8 @@
         }
 
         resultBox.classList.remove("hidden");
-        processedImg.src = "http://127.0.0.1:5000" + data.image_url;
+        processedImg.src = data.image_url;
+
         processedImg.classList.remove("hidden");
         resetBtn.classList.remove("hidden");
 
@@ -159,4 +167,5 @@
     }
   </script>
 </body>
+
 </html>
