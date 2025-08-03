@@ -12,5 +12,5 @@ typing-extensions==4.8.0
 dataclasses-json==0.5.7
 marshmallow==3.21.1
 
-# This is the key change 👇
-git+https://github.com/roboflow/inference.git@0.50.4#egg=inference-sdk
+# Roboflow inference (custom commit)
+git+https://github.com/roboflow/inference.git@daec570d3efbba52e7b7d26e74901b872b8ac547#egg=inference-sdk
