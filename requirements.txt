@@ -1,17 +1,16 @@
 Flask==3.1.1
 flask-cors==4.0.0
 gunicorn==21.2.0
-
-inference-sdk==0.50.4
-Pillow==11.3.0
-opencv-python-headless==4.7.0.72
 numpy==1.24.4
-scipy==1.11.4
-
+opencv-python-headless==4.7.0.72
+Pillow==11.3.0
 requests==2.31.0
+scipy==1.11.4
 tqdm==4.66.2
-
-typing-extensions==4.8.0
 typing-inspect==0.9.0
-marshmallow==3.21.1
+typing-extensions==4.8.0
 dataclasses-json==0.5.7
+marshmallow==3.21.1
+
+# This is the key change 👇
+git+https://github.com/roboflow/inference.git@0.50.4#egg=inference-sdk
