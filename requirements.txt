@@ -1,16 +1,16 @@
-Flask==3.1.1
+Flask==2.3.3
 flask-cors==4.0.0
 gunicorn==21.2.0
-numpy==1.24.4
+
+inference==0.8.0
+inference-sdk==0.9.9
+Pillow==10.2.0
 opencv-python-headless==4.7.0.72
-Pillow==11.3.0
+numpy==1.24.4
+scipy==1.10.1
 requests==2.31.0
-scipy==1.11.4
 tqdm==4.66.2
-typing-inspect==0.9.0
 typing-extensions==4.8.0
+typing-inspect==0.9.0
 dataclasses-json==0.5.7
 marshmallow==3.21.1
-
-# Roboflow inference (custom commit)
-git+https://github.com/roboflow/inference.git@daec570d3efbba52e7b7d26e74901b872b8ac547#egg=inference-sdk
