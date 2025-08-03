@@ -1,11 +1,9 @@
 services:
   - type: web
-    name: agri-drone-backend
+    name: agridrone-app
     env: python
-    region: oregon
-    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
+    buildCommand: pip install -r requirements.txt
     startCommand: gunicorn app:app
+    region: oregon
+    plan: free
     runtime: python
-    build:
-      env:
-        PYTHON_VERSION: 3.11.9
